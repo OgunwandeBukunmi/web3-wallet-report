@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chart.js Example</title>
+ <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+.div {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 20px;
+}
+
+header {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+canvas {
+  max-width: 700px;
+  max-height: 500px;
+  margin: 20px 0;
+}
+
+section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.content:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+.content h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.content h4 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.content img {
+  min-width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+a {
+  text-decoration: none;
+}
+  </style>
+</head>
+<body>
+  <div class="div">
+    <header>Report Viewer</header>
+    <div class="content">
+      <% if(!Errormessages.Balance) {%>
+         <h2>ETH balance:</h2>
+      <h4><%= ETHbalance %> ETH</h4>
+        <% }%>
+     
+      <main>
+        <% if (Errormessages && Errormessages.Balance) { %>
+          <p> Couldnt Get balance <%= Errormessages.Balance %></p>
+        <% } %>
+      </main>
+    </div>
+      <% if(!Errormessages.Prices && PricesPerToken.length != 0 ) {%>
+    <canvas id="canvas" style="width: 900px; height: 580px;"></canvas>
+    <% } %>
+
+    <main>
+      <% if (Errormessages && Errormessages.Prices) { %>
+        <p>Couldn't Get Price <%= Errormessages.Prices %></p>
+      <% } %>
+    </main>
+      <% if(!Errormessages.Tokens &&  PricesPerToken.length != 0) {%>
+    <section>
+      <% for (let i = 0; i < PricesPerToken.length; i++) { %>
+        <div class="content">
+          <h2><%= PricesPerToken[i].name %>:</h2>
+          <h4><%= PricesPerToken[i].value %> USD</h4>
+        </div>
+      <% } %>
+    </section>
+    <% }%>
+
+    <section>
+      <% if (Errormessages && Errormessages.Tokens) { %>
+        <p>Couldnt Get tokens <%= Errormessages.Tokens %></p>
+      <% } %>
+    </section>
+
+    <header>NFTs</header>
+      <% if(!Errormessages.NFT) {%>
+    <section>
+      <% for (let i = 0; i < orderednfts.length; i++) { %>
+        <a href="<%= orderednfts[i].bannerImage %>" target="_blank">
+          <div class="content">
+            <h2>Contract Name : <%= orderednfts[i].contract_name %></h2>
+            <h4>NFT Name : <%= orderednfts[i].name %></h4>
+           <% if( !orderednfts[i].image) {%>
+              <p>Couldn't Get Image</p>
+           <% } %>
+            <% if( orderednfts[i].image) {%>
+             <img src="<%=orderednfts[i].image %>" alt="NFT image" />
+           <% } %>
+            
+          </div>
+        </a>
+      <% } %>
+    </section>
+    <% } %>
+    <% if(orderednfts.length == 0) { %>
+      <p>This Wallet Owns no  Nfts</p>
+      <% } %>
+
+    <section>
+      <% if (Errormessages && Errormessages.NFT) { %>
+        <p>Couldn't Get Nfts <%= Errormessages.NFT %></p>
+      <% } %>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+  <script>
+    let pricesPerToken = <%- JSON.stringify(PricesPerToken) %>;
+
+    function getRandomColor() {
+      const letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    const ctx = document.getElementById("canvas");
+
+    const data = {
+      labels: pricesPerToken.map(item => item.name),
+      datasets: [{
+        label: "Portfolio Distribution",
+        data: pricesPerToken.map(item => item.value),
+        backgroundColor: pricesPerToken.map(() => getRandomColor()),
+        borderWidth: 1
+      }]
+    };
+
+    const config = {
+      type: "pie",
+      data: data,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.label || "";
+                let value = context.parsed;
+                return `${label}: ${value}`;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    new Chart(ctx, config);
+  </script>
+</body>
+</html>
