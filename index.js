@@ -14,8 +14,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(express.static("public"));
-
 
 let address ;
 let Errormessages = {}
@@ -205,12 +203,12 @@ app.get("/info", async (req,res)=>{
     let ETHbalance = await GetEthBalanceProvider();
 
    let Erc20tokens = await GetAllERC20Tokens() 
-   if( Erc20tokens && Erc20tokens !=0){
+   if( Erc20tokens && Erc20tokens.length !=0){
     Erc20tokens = Erc20tokens.filter(item => item != null);
    }
      
      const nfts = await GetAllNftsNow()
-    let orderednfts
+    let orderednfts;
      if(nfts && nfts.length != 0){
        orderednfts = await nfts.map((item, i) => {
 
@@ -226,6 +224,9 @@ app.get("/info", async (req,res)=>{
       
     };
   });
+     }
+     if( !orderednfts ||  orderednfts.length == 0){
+      Errormessages.NFT = "You own No NFTs Lol"
      }
     
 
@@ -252,4 +253,3 @@ app.get("/info", async (req,res)=>{
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
-
