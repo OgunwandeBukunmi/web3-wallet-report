@@ -99,11 +99,12 @@ a {
       <h4><%= ETHbalance %> ETH</h4>
         <% }%>
      
-      <main>
+     
         <% if (Errormessages && Errormessages.Balance) { %>
-          <p> Couldnt Get balance <%= Errormessages.Balance %></p>
+               <h2>ETH balance:</h2>
+      <h4>0.00 ETH</h4>
         <% } %>
-      </main>
+     
     </div>
       <% if(!Errormessages.Prices && PricesPerToken.length != 0 ) {%>
     <canvas id="canvas" style="width: 900px; height: 580px;"></canvas>
